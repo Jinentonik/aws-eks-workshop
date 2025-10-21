@@ -31,6 +31,14 @@ module "eks" {
         enableNetworkPolicy = "true"
       })
     }
+    kube-proxy = {
+      before_compute = true
+      most_recent    = true
+    }
+    coredns = {
+      before_compute = true
+      most_recent    = true
+    }
   }
 
   vpc_id     = module.vpc.vpc_id
@@ -108,10 +116,36 @@ module "eks" {
       labels = {
         workshop-default = "yes"
       }
+
+      metadata_options = {
+        http_put_response_hop_limit = 2
+      }
     }
   }
 
   tags = merge(local.tags, {
     "karpenter.sh/discovery" = var.cluster_name
   })
+}
+
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace = "kube-system"
+  # upgrade_install = true
+  set = [
+    {
+      name  = "clusterName"
+      value = "eks-workshop-1"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "kube-system-service-account"
+    },
+    {
+      name = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = aws_iam_role.aws_load_balancer_controller.arn
+    }
+  ]
 }
