@@ -149,3 +149,39 @@ resource "helm_release" "aws_load_balancer_controller" {
     }
   ]
 }
+
+resource "helm_release" "kagent_crds" {
+  name       = "kagent-crds"
+  chart     = "oci://ghcr.io/kagent-dev/kagent/helm/kagent"
+  namespace = "kagent"
+  create_namespace = true
+  
+  # upgrade_install = true
+  set = [
+    {
+      name  = "providers.default"
+      value = "openAI"
+    },
+    {
+      name  = "providers.openAI.apiKey"
+      value = var.openAI_API_KEY
+    }
+  ]
+}
+
+resource "helm_release" "kagent" {
+  name       = "kagent"
+  chart     = "oci://ghcr.io/kagent-dev/kagent/helm/kagent"
+  namespace = "kagent"
+  # upgrade_install = true
+  set = [
+    {
+      name  = "providers.default"
+      value = "openAI"
+    },
+    {
+      name  = "providers.openAI.apiKey"
+      value = var.openAI_API_KEY
+    }
+  ]
+}

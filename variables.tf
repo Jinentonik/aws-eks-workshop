@@ -33,3 +33,8 @@ variable "remote_pod_cidr" {
   type        = string
   default     = "10.53.0.0/16"
 }
+
+variable "openAI_API_KEY" {
+  type = string
+  description = "API key of openAI"
+}
